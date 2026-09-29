@@ -1,0 +1,35 @@
+# The desktop harness: a window with the round panel in it, and the panel's
+# own chip model in the path.
+#
+# Nothing here goes on the device. `spd2010` is the crate that would; this one
+# is three crates away from a microcontroller and depends on a windowing
+# library, which is exactly why the two are separate.
+[package]
+name = "roundpanel"
+description = "Run your own software on a simulated ESP32-S3 1.46 inch 412x412 round display"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "roundpanel"
+path = "src/lib.rs"
+
+[dependencies]
+spd2010 = { path = "../spd2010" }
+# Screenshots. Writing a PNG encoder by hand would be a worse second copy.
+png = "0.17"
+
+# A window and a pixel buffer, and nothing else -- chosen over winit+softbuffer
+# because that pair is two crates and an event loop to do what this one call
+# does, and over SDL because minifb dlopens what it needs rather than wanting
+# headers installed.
+#
+# Scoped away from `wasm32` so `cargo build --lib --target
+# wasm32-unknown-unknown` still works: the emulator itself is portable, only
+# the window is not.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+minifb = "0.28"

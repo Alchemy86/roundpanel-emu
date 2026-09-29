@@ -1,0 +1,10 @@
+<!-- roundpanel-emu icon - the module alone
+     Hand-authored for Glyphsmith (Apache-2.0). No font embedded, subset or traced;
+     letterforms are original stroked paths. Regenerate with python3 brand/make.py -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img">
+<rect x="1" y="1" width="126" height="126" rx="28" fill="#0d1117" stroke="#30363d" stroke-width="2"/>
+<g transform="translate(0.0 0.0) scale(1.2800)">
+  <circle cx="50" cy="50" r="36" fill="none" stroke="#f0f3f6" stroke-width="22"/>
+  <circle cx="50" cy="50" r="27" fill="#4ea3ff"/>
+</g>
+</svg>

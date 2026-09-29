@@ -1,0 +1,23 @@
+# roundpanel-emu: a desktop emulator for the ESP32-S3 Development Board With
+# 1.46 Round Display 412 x 412 (Waveshare ESP32-S3-Touch-LCD-1.46B).
+#
+# Two crates, and the split is the point:
+#
+#   spd2010    the panel. A QSPI driver for the SPD2010 display controller and
+#              a software model of the chip it talks to. `no_std`, no
+#              dependencies, no window -- the half that would go on the board.
+#   roundpanel the harness. A window, a framebuffer, touch and the two side
+#              keys, with the panel in the path: every frame your application
+#              draws is encoded, sent as real QSPI transfers, and read back out
+#              of the chip model's RAM before it is shown.
+[workspace]
+resolver = "2"
+members = ["spd2010", "roundpanel"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+license = "MIT"
+repository = "https://github.com/Alchemy86/roundpanel-emu"
+publish = false

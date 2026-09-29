@@ -1,0 +1,21 @@
+# A software model of the SPD2010 (Solomon Systech L-WEA2010) TDDI driver IC,
+# and the QSPI driver that talks to it.
+#
+# `no_std`, `forbid(unsafe_code)` and zero dependencies, because the driver
+# half is bound for a microcontroller and the emulator half is only worth
+# anything if it is the *same* command set the device will send. The RAM model
+# is borrowed from the caller rather than allocated, so neither half needs an
+# allocator.
+[package]
+name = "spd2010"
+description = "SPD2010 QSPI command set: a driver, and a software model of the chip"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+name = "spd2010"
+path = "src/lib.rs"
