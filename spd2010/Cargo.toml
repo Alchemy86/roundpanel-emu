@@ -14,7 +14,10 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-publish.workspace = true
+publish = true
+readme = "../README.md"
+keywords = ["esp32", "display-driver", "qspi", "no-std", "embedded"]
+categories = ["embedded", "no-std", "hardware-support"]
 
 [lib]
 name = "spd2010"

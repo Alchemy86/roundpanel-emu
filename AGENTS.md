@@ -22,6 +22,19 @@ code on the desktop and on the board is the whole claim.
   machine (`cargo test --release --test headless -- --nocapture` prints it).
   If that number moves a lot, something started copying frames.
 
+## Publishing and CI
+
+- `spd2010` is published to crates.io (`publish = true`, real keywords/categories
+  in `spd2010/Cargo.toml`); `roundpanel` stays git-only (`publish = false`) since
+  the README already tells people to depend on it via git and it's the harness,
+  not the reusable half. `.github/workflows/ci.yml` runs build/test/clippy/fmt
+  plus `cargo publish --dry-run -p spd2010` on every push and PR, so a metadata
+  break is caught before a real publish. `.github/workflows/release.yml` builds
+  both examples for Linux/macOS/Windows and attaches them to a GitHub Release on
+  a pushed `v*` tag; its `publish-crate` job actually runs `cargo publish -p
+  spd2010` on a tag but only fires once a `CARGO_REGISTRY_TOKEN` repo secret
+  exists -- that secret is the one manual step left to turn on real publishing.
+
 ## Sharp edges
 
 - The framebuffer is square and the glass is the inscribed circle. Anything
