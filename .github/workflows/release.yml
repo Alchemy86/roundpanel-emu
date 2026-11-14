@@ -35,6 +35,7 @@ jobs:
         run: |
           cargo build --release -p roundpanel --example test-pattern --target ${{ matrix.target }}
           cargo build --release -p roundpanel --example bouncing-dot --target ${{ matrix.target }}
+          cargo build --release -p roundpanel --example chiptune --target ${{ matrix.target }}
 
       - name: stage binaries
         shell: bash
@@ -44,6 +45,8 @@ jobs:
             dist/test-pattern-${{ matrix.target }}${{ matrix.ext }}
           cp target/${{ matrix.target }}/release/examples/bouncing-dot${{ matrix.ext }} \
             dist/bouncing-dot-${{ matrix.target }}${{ matrix.ext }}
+          cp target/${{ matrix.target }}/release/examples/chiptune${{ matrix.ext }} \
+            dist/chiptune-${{ matrix.target }}${{ matrix.ext }}
 
       - uses: actions/upload-artifact@v4
         with:

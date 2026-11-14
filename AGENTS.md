@@ -43,6 +43,10 @@ code on the desktop and on the board is the whole claim.
   slower per step than a desktop and nothing here emulates sound. Never judge a
   hot loop (especially audio) by how it runs here; see
   `docs/timing-and-audio.md`.
+- `roundpanel/examples/common/chipsynth.rs` is shared by the `chiptune`
+  example and `roundpanel/tests/chiptune.rs` (via `#[path]`). Any change to the
+  synth must keep that test's checksums equal with the skip and the batching on
+  and off; `--board-projection` is the cost check.
 - `Frame::clear` deliberately ignores `clip_to_glass`; every other draw call
   honours it.
 - The logo is generated, never hand-edited: `python3 brand/make.py` with

@@ -19,9 +19,10 @@ with PWR and BOOT side buttons.
 <p align="center">
   <img src="docs/test-pattern.png" width="330" alt="The test pattern: twelve colour wedges round the rim, concentric rings, a crosshair, and a ruler of ticks four dots apart" />
   <img src="docs/bouncing-dot.png" width="330" alt="The bouncing dot example: a blue dot with a fading trail inside the round glass" />
+  <img src="docs/chiptune.png" width="330" alt="The chiptune example: four coloured rings round the glass, one per synth voice, lit at each note's pitch and as wide as it is loud, a lead-time gauge round the rim, and the mixer's cost and a waveform in the middle" />
 </p>
 
-Both pictures are the panel's own readback — drawn by the example, encoded,
+All three pictures are the panel's own readback — drawn by the example, encoded,
 sent as QSPI transfers, decoded by the chip model, and read back out of its RAM.
 Neither was drawn to a canvas and screenshotted.
 
@@ -41,6 +42,7 @@ it. Mouse is the touch panel, `1` is PWR, `2` is BOOT, `S` writes a screenshot,
 
 ```sh
 cargo run --release --example bouncing-dot     # touch, keys, and a trail
+cargo run --release --example chiptune         # a sound engine the board can afford
 cargo run --release --example test-pattern -- --scale 2 --format 565
 ```
 
@@ -103,7 +105,7 @@ assert_eq!(&panel.dots()[(206 * 412 + 60) * 3..][..3], &[0xff, 0xb3, 0x4e]);
 |---|---|
 | `spd2010/` | the panel. A QSPI driver for the SPD2010 display controller, and a software model of the chip. `no_std`, `forbid(unsafe_code)`, no dependencies — the half that would go on the board |
 | `roundpanel/` | the harness. Framebuffer, window, touch, the two side keys, screenshots, and the headless path |
-| `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either |
+| `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either; `chiptune` when your application makes sound |
 | `brand/` | the logo, and the [Glyphsmith](https://github.com/Alchemy86/Glyphsmith) script that draws it |
 
 ## Why this is an emulator and not a canvas
@@ -165,6 +167,27 @@ times slower per step on the board than on a current desktop, and there is no
 sound emulation at all. If you put audio on the board's speaker, read
 [docs/timing-and-audio.md](docs/timing-and-audio.md) first; it covers a real
 stutter that the desktop never showed, and the rules that fixed it.
+
+## Sound: the `chiptune` example
+
+The harness has no speaker, and the desktop is about 150 times faster than the
+board, so sound code that is fine here can stutter there. `chiptune` is the
+pattern that fixed a real stutter on this board, around an original tune: a
+four-voice chip synth in integer maths that skips silent voices and batches
+noise runs, mixed ahead into a ring in small budgeted slices on a second
+thread (the ESP32-S3's second core), fed by a lock-free command queue. The
+glass shows each voice as a ring, the ring's lead time round the rim, and what
+each mixing call costs.
+
+```sh
+cargo run --release --example chiptune -- --wav tune.wav          # hear it
+cargo run --release --example chiptune -- --board-projection      # will it fit?
+cargo test -p roundpanel --test chiptune                          # skip changes nothing
+```
+
+The engine is `roundpanel/examples/common/chipsynth.rs`; copy that.
+[docs/timing-and-audio.md](docs/timing-and-audio.md) says why it is built the
+way it is.
 
 ## Sources
 

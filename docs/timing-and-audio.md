@@ -59,6 +59,39 @@ the rest of the battle. Chip steps per output sample went from 2.84 to 35.3.
 - Then flash it and read the board's own log while the music plays. Only the
   board's numbers count.
 
+## The example in this repo
+
+`roundpanel/examples/chiptune.rs` is all five rules in a few hundred lines,
+around an original tune, and `roundpanel/examples/common/chipsynth.rs` is the
+engine to copy:
+
+- four voices (two squares, a wavetable, a noise LFSR), stepped event to event
+  at a 1.024 MHz voice clock, 64 cycles a frame, so a frame's box filter is a
+  sum. No division, float or 64-bit value at run time; the pitch tables are
+  computed by the compiler. The noise period is `8 << shift`, so a run of noise
+  steps is counted and summed with shifts and a popcount, not a loop.
+- silent voices skipped, with a comment on exactly when that is and is not
+  output-identical, and `roundpanel/tests/chiptune.rs` checking it by render
+  checksum (skip on and off, batching on and off).
+- a 4096-frame ring kept 2048 frames (128 ms) ahead, mixed 128 frames at a
+  time, each call stopping once its budget is spent; a lock-free SPSC queue of
+  `u32` commands from the drawing side; a `std::thread` where core 1 would be,
+  with the comments saying what each piece becomes on the ESP32-S3.
+
+```sh
+cargo run --release --example chiptune                       # the visualiser
+cargo run --release --example chiptune -- --wav tune.wav     # what it would play
+cargo run --release --example chiptune -- --board-projection
+```
+
+`--board-projection` times the exact mixer over a minute of the tune with a
+noise burst every 1.5 s and multiplies by the 149x above. On the machine it was
+written on it projected about 2 us of board time an output frame and 3-4% of
+the audio core with both fixes, and about 7 us a frame and 11% (over the 5%
+budget) with neither. The 149x was measured on a different synth, so
+the projection is a sanity check, not a promise: time one slice on your own
+board and replace the ratio.
+
 ## Where to read more
 
 - Pokewalker: `software/README.md`, "Sound: the window cannot tell you what the
