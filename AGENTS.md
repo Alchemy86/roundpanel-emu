@@ -39,6 +39,10 @@ code on the desktop and on the board is the whole claim.
 
 - The framebuffer is square and the glass is the inscribed circle. Anything
   drawn in the corners is addressable and invisible on the hardware.
+- The emulator is right about pixels and wrong about time: the board is ~150x
+  slower per step than a desktop and nothing here emulates sound. Never judge a
+  hot loop (especially audio) by how it runs here; see
+  `docs/timing-and-audio.md`.
 - `Frame::clear` deliberately ignores `clip_to_glass`; every other draw call
   honours it.
 - The logo is generated, never hand-edited: `python3 brand/make.py` with

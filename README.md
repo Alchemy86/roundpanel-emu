@@ -160,6 +160,12 @@ firmware. To bring the panel up on hardware you still need:
 It is also not an ESP32-S3 emulator. Your drawing code runs natively as a Rust
 program on your machine — no Xtensa core, no FreeRTOS, no WiFi, no filesystem.
 
+That also means it says nothing about **time**: the same code runs roughly 150
+times slower per step on the board than on a current desktop, and there is no
+sound emulation at all. If you put audio on the board's speaker, read
+[docs/timing-and-audio.md](docs/timing-and-audio.md) first; it covers a real
+stutter that the desktop never showed, and the rules that fixed it.
+
 ## Sources
 
 - Solomon Systech, *L-WEA2010: 454x454 TDDI for IOT/Wearable*, Product Preview
