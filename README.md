@@ -20,9 +20,10 @@ with PWR and BOOT side buttons.
   <img src="docs/test-pattern.png" width="330" alt="The test pattern: twelve colour wedges round the rim, concentric rings, a crosshair, and a ruler of ticks four dots apart" />
   <img src="docs/bouncing-dot.png" width="330" alt="The bouncing dot example: a blue dot with a fading trail inside the round glass" />
   <img src="docs/chiptune.png" width="330" alt="The chiptune example: four coloured rings round the glass, one per synth voice, lit at each note's pitch and as wide as it is loud, a lead-time gauge round the rim, and the mixer's cost and a waveform in the middle" />
+  <img src="docs/steps.png" width="330" alt="The steps example during a shake: a step count at the top, the filtered accelerometer signal swinging steadily across the middle with its peaks marked red as rejected, and SHAKE REJECTED below" />
 </p>
 
-All three pictures are the panel's own readback — drawn by the example, encoded,
+All four pictures are the panel's own readback — drawn by the example, encoded,
 sent as QSPI transfers, decoded by the chip model, and read back out of its RAM.
 Neither was drawn to a canvas and screenshotted.
 
@@ -43,6 +44,7 @@ it. Mouse is the touch panel, `1` is PWR, `2` is BOOT, `S` writes a screenshot,
 ```sh
 cargo run --release --example bouncing-dot     # touch, keys, and a trail
 cargo run --release --example chiptune         # a sound engine the board can afford
+cargo run --release --example steps            # a software pedometer on a walk trace
 cargo run --release --example test-pattern -- --scale 2 --format 565
 ```
 
@@ -105,7 +107,9 @@ assert_eq!(&panel.dots()[(206 * 412 + 60) * 3..][..3], &[0xff, 0xb3, 0x4e]);
 |---|---|
 | `spd2010/` | the panel. A QSPI driver for the SPD2010 display controller, and a software model of the chip. `no_std`, `forbid(unsafe_code)`, no dependencies — the half that would go on the board |
 | `roundpanel/` | the harness. Framebuffer, window, touch, the two side keys, screenshots, and the headless path |
-| `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either; `chiptune` when your application makes sound |
+| `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either; `chiptune` when your application makes sound, `steps` when it counts steps |
+| `board/` | on-device reference code for the IMU, WiFi and flash — not built here, since it needs the real chip |
+| `docs/` | what the emulator cannot show you: [time and sound](docs/timing-and-audio.md), [the IMU and steps](docs/imu-and-steps.md), [WiFi](docs/wifi.md), [flash storage](docs/flash-storage.md) |
 | `brand/` | the logo, and the [Glyphsmith](https://github.com/Alchemy86/Glyphsmith) script that draws it |
 
 ## Why this is an emulator and not a canvas
@@ -188,6 +192,24 @@ cargo test -p roundpanel --test chiptune                          # skip changes
 The engine is `roundpanel/examples/common/chipsynth.rs`; copy that.
 [docs/timing-and-audio.md](docs/timing-and-audio.md) says why it is built the
 way it is.
+
+## Steps, WiFi and flash: what we learned on the board
+
+The emulator has no IMU, no radio and no flash, and each of them surprised us
+on the real board. The notes are findings first, with the numbers:
+
+- [docs/imu-and-steps.md](docs/imu-and-steps.md) — the QMI8658's own
+  pedometer never counted a step, the FIFO and the pedometer cannot run
+  together, and the CTRL9 handshake must use `STATUSINT` only. Count steps in
+  software: the `steps` example runs the detector that worked on a walk trace,
+  with a shake being rejected, and `board/qmi8658.rs` is the init that keeps
+  the accelerometer live, cited line by line.
+- [docs/wifi.md](docs/wifi.md) — never bring the radio up at boot, internal
+  heap before PSRAM, size `esp-radio`'s event channel, a deadline on every
+  wait, and a sync policy that lets the radio sleep. `board/wifi.rs`.
+- [docs/flash-storage.md](docs/flash-storage.md) — open the flash once; a
+  second `FlashStorage` misread the chip's size and every save failed.
+  `board/flash.rs`.
 
 ## Sources
 

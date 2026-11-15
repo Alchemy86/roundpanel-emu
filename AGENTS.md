@@ -30,7 +30,7 @@ code on the desktop and on the board is the whole claim.
   not the reusable half. `.github/workflows/ci.yml` runs build/test/clippy/fmt
   plus `cargo publish --dry-run -p spd2010` on every push and PR, so a metadata
   break is caught before a real publish. `.github/workflows/release.yml` builds
-  both examples for Linux/macOS/Windows and attaches them to a GitHub Release on
+  every example for Linux/macOS/Windows and attaches them to a GitHub Release on
   a pushed `v*` tag; its `publish-crate` job actually runs `cargo publish -p
   spd2010` on a tag but only fires once a `CARGO_REGISTRY_TOKEN` repo secret
   exists -- that secret is the one manual step left to turn on real publishing.
@@ -43,6 +43,17 @@ code on the desktop and on the board is the whole claim.
   slower per step than a desktop and nothing here emulates sound. Never judge a
   hot loop (especially audio) by how it runs here; see
   `docs/timing-and-audio.md`.
+- The board's IMU, radio and flash are not emulated. What we learned about
+  them is in `docs/imu-and-steps.md` (the QMI8658's own pedometer never
+  counted; no FIFO with the pedometer; CTRL9 on `STATUSINT` only),
+  `docs/wifi.md` (no radio at boot, internal heap before PSRAM, event channel
+  16/4, deadlines) and `docs/flash-storage.md` (open the flash once).
+  `board/*.rs` is on-device reference code that nothing compiles; keep it
+  out of every `Cargo.toml` and say so in each file's header.
+- `roundpanel/examples/common/footfall.rs` and `walktrace.rs` are shared by the
+  `steps` example and `roundpanel/tests/steps.rs`. The shipped trace
+  (`examples/data/walk-trace.csv`) is synthetic; regenerate it with
+  `--make-trace`, never edit it by hand.
 - `roundpanel/examples/common/chipsynth.rs` is shared by the `chiptune`
   example and `roundpanel/tests/chiptune.rs` (via `#[path]`). Any change to the
   synth must keep that test's checksums equal with the skip and the batching on
