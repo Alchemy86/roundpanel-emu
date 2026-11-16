@@ -109,7 +109,7 @@ assert_eq!(&panel.dots()[(206 * 412 + 60) * 3..][..3], &[0xff, 0xb3, 0x4e]);
 | `roundpanel/` | the harness. Framebuffer, window, touch, the two side keys, screenshots, and the headless path |
 | `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either; `chiptune` when your application makes sound, `steps` when it counts steps |
 | `board/` | on-device reference code for the IMU, WiFi and flash — not built here, since it needs the real chip |
-| `docs/` | what the emulator cannot show you: [time and sound](docs/timing-and-audio.md), [the IMU and steps](docs/imu-and-steps.md), [WiFi](docs/wifi.md), [flash storage](docs/flash-storage.md) |
+| `docs/` | what the emulator cannot show you: [time and sound](docs/timing-and-audio.md), [the IMU and steps](docs/imu-and-steps.md), [WiFi](docs/wifi.md), [flash storage](docs/flash-storage.md), [the battery](docs/battery.md) |
 | `brand/` | the logo, and the [Glyphsmith](https://github.com/Alchemy86/Glyphsmith) script that draws it |
 
 ## Why this is an emulator and not a canvas
@@ -193,9 +193,9 @@ The engine is `roundpanel/examples/common/chipsynth.rs`; copy that.
 [docs/timing-and-audio.md](docs/timing-and-audio.md) says why it is built the
 way it is.
 
-## Steps, WiFi and flash: what we learned on the board
+## Steps, WiFi, flash and battery: what we learned on the board
 
-The emulator has no IMU, no radio and no flash, and each of them surprised us
+The emulator has no IMU, no radio, no flash and no battery, and each of them surprised us
 on the real board. The notes are findings first, with the numbers:
 
 - [docs/imu-and-steps.md](docs/imu-and-steps.md) — the QMI8658's own
@@ -210,6 +210,10 @@ on the real board. The notes are findings first, with the numbers:
 - [docs/flash-storage.md](docs/flash-storage.md) — open the flash once; a
   second `FlashStorage` misread the chip's size and every save failed.
   `board/flash.rs`.
+- [docs/battery.md](docs/battery.md) — the 1.25 mm LiPo we used came wired
+  backwards for the BAT socket, so it never powered the board; how to spot
+  it (the LEDs and the USB voltage reading prove nothing), and holding
+  `BAT_Control` high so the board stays on when USB comes out.
 
 ## Sources
 
