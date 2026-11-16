@@ -82,6 +82,14 @@ impl<B: QspiBus> Spd2010<B> {
         self.bus
     }
 
+    /// The bus itself, for a host that sends pixel data its own way between
+    /// this driver's commands -- from its own DMA buffers, say, while the next
+    /// run is being made. What it sends must be the `RAMWR`/`RAMWRC` writes
+    /// [`Spd2010::write_pixels`] would have sent for the same window.
+    pub fn bus_mut(&mut self) -> &mut B {
+        &mut self.bus
+    }
+
     /// Send a command with no parameters.
     pub fn cmd(&mut self, cmd: u8) -> Result<(), B::Error> {
         self.bus.transfer(&Transaction::command(cmd, &[]))

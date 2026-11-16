@@ -45,6 +45,8 @@ it. Mouse is the touch panel, `1` is PWR, `2` is BOOT, `S` writes a screenshot,
 cargo run --release --example bouncing-dot     # touch, keys, and a trail
 cargo run --release --example chiptune         # a sound engine the board can afford
 cargo run --release --example steps            # a software pedometer on a walk trace
+cargo run --release --example colour-table     # one colour table a frame, timed against per pixel
+cargo run --release --example frame-budget     # where a frame's time goes, one core or two
 cargo run --release --example test-pattern -- --scale 2 --format 565
 ```
 
@@ -107,9 +109,9 @@ assert_eq!(&panel.dots()[(206 * 412 + 60) * 3..][..3], &[0xff, 0xb3, 0x4e]);
 |---|---|
 | `spd2010/` | the panel. A QSPI driver for the SPD2010 display controller, and a software model of the chip. `no_std`, `forbid(unsafe_code)`, no dependencies — the half that would go on the board |
 | `roundpanel/` | the harness. Framebuffer, window, touch, the two side keys, screenshots, and the headless path |
-| `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either; `chiptune` when your application makes sound, `steps` when it counts steps |
-| `board/` | on-device reference code for the IMU, WiFi and flash — not built here, since it needs the real chip |
-| `docs/` | what the emulator cannot show you: [time and sound](docs/timing-and-audio.md), [the IMU and steps](docs/imu-and-steps.md), [WiFi](docs/wifi.md), [flash storage](docs/flash-storage.md), [the battery](docs/battery.md) |
+| `roundpanel/examples/` | `test-pattern` and `bouncing-dot` — start from either; `chiptune` when your application makes sound, `steps` when it counts steps, `colour-table` and `frame-budget` when it needs to be fast |
+| `board/` | on-device reference code for the IMU, WiFi, flash and the second core — not built here, since it needs the real chip |
+| `docs/` | what the emulator cannot show you: [time and sound](docs/timing-and-audio.md), [using both cores](docs/two-cores.md), [the IMU and steps](docs/imu-and-steps.md), [WiFi](docs/wifi.md), [flash storage](docs/flash-storage.md), [the battery](docs/battery.md) |
 | `brand/` | the logo, and the [Glyphsmith](https://github.com/Alchemy86/Glyphsmith) script that draws it |
 
 ## Why this is an emulator and not a canvas
@@ -192,6 +194,28 @@ cargo test -p roundpanel --test chiptune                          # skip changes
 The engine is `roundpanel/examples/common/chipsynth.rs`; copy that.
 [docs/timing-and-audio.md](docs/timing-and-audio.md) says why it is built the
 way it is.
+
+## Speed: using both cores
+
+On the board, a frame is drawing, encoding and sending 339,488 bytes over a
+40 MHz QSPI bus, which takes about 17 ms by itself. Moving the encode and send
+to the second core, encoding through one colour table a frame, and filling the
+next DMA buffer while the last is on the wire more than doubled
+[Pokewalker](https://github.com/Alchemy86/pokewalker)'s frame rate: 13.2 to
+36.5 fps on a per-pixel-shaded sphere, 12.1 to 24.3 in a 3D battle.
+
+```sh
+cargo run --release --example frame-budget -- --print --draw 20 --encode 18.8
+cargo run --release --example colour-table -- --bench 200
+```
+
+`frame-budget` computes the three passes, one core, core 1 sending, and
+pipelined, from the transfers the driver really sends; `colour-table` times
+the table against per-pixel conversion on your desktop and checks they give the
+same bytes. [docs/two-cores.md](docs/two-cores.md) has the design, the rules
+core 1 must follow, the heartbeat line to measure with, and where sharing rows
+between cores made things slower. The board code is `board/present.rs`,
+`board/lend.rs` and `board/rows.rs`.
 
 ## Steps, WiFi, flash and battery: what we learned on the board
 

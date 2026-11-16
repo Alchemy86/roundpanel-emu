@@ -58,6 +58,12 @@ code on the desktop and on the board is the whole claim.
   example and `roundpanel/tests/chiptune.rs` (via `#[path]`). Any change to the
   synth must keep that test's checksums equal with the skip and the batching on
   and off; `--board-projection` is the cost check.
+- `roundpanel/examples/common/colourtable.rs` is shared by the `colour-table`
+  example and `roundpanel/tests/colour_table.rs`; the table and per-pixel
+  encoders must stay byte-identical. `frame-budget`'s wire time is computed
+  from the driver's transfers, never presented as a board measurement. The
+  two-core board code (`board/present.rs`, `lend.rs`, `rows.rs`) and its
+  numbers are in `docs/two-cores.md`.
 - `Frame::clear` deliberately ignores `clip_to_glass`; every other draw call
   honours it.
 - The logo is generated, never hand-edited: `python3 brand/make.py` with
